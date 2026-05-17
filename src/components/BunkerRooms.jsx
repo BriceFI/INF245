@@ -352,8 +352,10 @@ export function PowerStation() {
 
   const chargeRef = useRef(charge);
   const speedRef = useRef(speed);
-  chargeRef.current = charge;
-  speedRef.current = speed;
+  useEffect(() => {
+    chargeRef.current = charge;
+    speedRef.current = speed;
+  }, [charge, speed]);
 
   useEffect(() => {
     const t = setInterval(() => { 

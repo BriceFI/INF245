@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../lib/supabase';
 import {
   Trophy, Send, XCircle, AlertTriangle, CheckCircle,
-  Clock, Trash2, ChevronRight, X, LayoutDashboard, History, LogOut, BarChart2
+  Clock, Trash2, ChevronRight, LayoutDashboard, History, LogOut
 } from 'lucide-react';
 
 export default function AdminView({ companies }) {
@@ -22,7 +22,7 @@ export default function AdminView({ companies }) {
   const [activeQuestion, setActiveQuestion] = useState(null);
   const [pastQuestions, setPastQuestions] = useState([]);
   const [stats, setStats] = useState({ total: 0, answered: 0, correct: 0, wrong: 0 });
-  const [answersMap, setAnswersMap] = useState({});
+
   const [timeLeft, setTimeLeft] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -65,10 +65,6 @@ export default function AdminView({ companies }) {
           .select('user_id, is_correct')
           .eq('question_id', qData.id);
 
-        const map = {};
-        aData?.forEach(a => { map[a.user_id] = { is_correct: a.is_correct }; });
-        setAnswersMap(map);
-
         setStats({
           answered: aData?.length || 0,
           total: totalCount || 0,
@@ -76,7 +72,6 @@ export default function AdminView({ companies }) {
           wrong: aData?.filter(a => !a.is_correct).length || 0,
         });
       } else {
-        setAnswersMap({});
         setStats({ total: 0, answered: 0, correct: 0, wrong: 0 });
       }
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabase';
-import { Trophy, X, ArrowUpRight, LayoutDashboard, LogOut, Send, AlertCircle, CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { Trophy, X, LayoutDashboard, LogOut, Send, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import PropTypes from 'prop-types';
 import { 
   BunkerStyles, RoboticAssembly, LogisticsBay, ResearchLab, 
