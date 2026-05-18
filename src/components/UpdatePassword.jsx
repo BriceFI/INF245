@@ -1,11 +1,18 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
-import { Lock, Save } from 'lucide-react';
+import { Lock, Save, AlertTriangle } from 'lucide-react';
 
 export default function UpdatePassword({ onPasswordUpdated }) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [sessionStatus, setSessionStatus] = useState('checking');
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSessionStatus(session ? 'ok' : 'missing');
+    });
+  }, []);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -26,6 +33,14 @@ export default function UpdatePassword({ onPasswordUpdated }) {
     <div className="flex flex-col items-center justify-center min-h-screen bg-beige-100 px-4">
       <div className="w-full max-w-md p-8 bg-white rounded-3xl shadow-2xl border border-beige-200">
         <h2 className="text-2xl font-extrabold text-neutral-900 mb-6 text-center">Nouveau mot de passe</h2>
+        
+        {sessionStatus === 'missing' && (
+          <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium flex items-start gap-3">
+            <AlertTriangle className="flex-shrink-0" size={20} />
+            <p><strong>Lien expiré ou invalide.</strong> Supabase n'a pas pu vous connecter avec ce lien. Veuillez demander un nouveau lien de réinitialisation.</p>
+          </div>
+        )}
+
         {error && (
           <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm font-medium text-center">
             {error}
@@ -41,16 +56,17 @@ export default function UpdatePassword({ onPasswordUpdated }) {
               <input
                 type="password"
                 required
+                disabled={sessionStatus === 'missing'}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full pl-12 pr-4 py-3 bg-beige-50 border border-beige-200 rounded-2xl focus:ring-2 focus:ring-terracotta-500"
+                className="w-full pl-12 pr-4 py-3 bg-beige-50 border border-beige-200 rounded-2xl focus:ring-2 focus:ring-terracotta-500 disabled:opacity-50"
                 placeholder="••••••••"
               />
             </div>
           </div>
           <button
             type="submit"
-            disabled={isLoading || password.length < 6}
+            disabled={isLoading || password.length < 6 || sessionStatus === 'missing'}
             className="w-full flex items-center justify-center py-4 px-6 rounded-2xl text-white bg-terracotta-600 hover:bg-terracotta-500 transition-all font-bold disabled:opacity-50"
           >
             {isLoading ? 'Mise à jour...' : <><Save size={18} className="mr-3" /> Enregistrer</>}
@@ -60,3 +76,4 @@ export default function UpdatePassword({ onPasswordUpdated }) {
     </div>
   );
 }
+
