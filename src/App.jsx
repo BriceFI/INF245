@@ -11,9 +11,23 @@ function App() {
   const [isRecovery, setIsRecovery] = useState(false);
 
   useEffect(() => {
-    // Check initial URL for recovery token (HashRouter puts tokens in the hash)
-    if (window.location.hash.includes('type=recovery')) {
+    // Extract tokens before HashRouter can modify the URL
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
       setIsRecovery(true);
+      
+      // Manually set the session because HashRouter can interfere with Supabase's auto-detection
+      const hashString = hash.replace(/^#\/?/, ''); // Remove # or #/
+      const params = new URLSearchParams(hashString);
+      const accessToken = params.get('access_token');
+      const refreshToken = params.get('refresh_token');
+      
+      if (accessToken && refreshToken) {
+        supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken
+        });
+      }
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
