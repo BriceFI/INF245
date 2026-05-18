@@ -66,7 +66,7 @@ export default function UpdatePassword({ onPasswordUpdated }) {
           </div>
           <button
             type="submit"
-            disabled={isLoading || password.length < 6 || sessionStatus === 'missing'}
+            disabled={isLoading || password.length < 6 || sessionStatus !== 'ok'}
             className="w-full flex items-center justify-center py-4 px-6 rounded-2xl text-white bg-terracotta-600 hover:bg-terracotta-500 transition-all font-bold disabled:opacity-50"
           >
             {isLoading ? 'Mise à jour...' : <><Save size={18} className="mr-3" /> Enregistrer</>}
