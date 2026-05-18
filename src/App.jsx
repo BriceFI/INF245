@@ -9,11 +9,18 @@ function App() {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isRecovery, setIsRecovery] = useState(false);
+  const [recoveryToken, setRecoveryToken] = useState(null);
 
   useEffect(() => {
     // Check initial URL for recovery token (HashRouter puts tokens in the hash)
-    if (window.location.hash.includes('type=recovery')) {
+    const hash = window.location.hash;
+    if (hash.includes('type=recovery')) {
       setIsRecovery(true);
+      const hashString = hash.replace(/^#\/?/, '');
+      const params = new URLSearchParams(hashString);
+      if (params.get('access_token')) {
+        setRecoveryToken(params.get('access_token'));
+      }
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -49,7 +56,7 @@ function App() {
             <Route 
               path="/" 
               element={
-                isRecovery ? <UpdatePassword onPasswordUpdated={() => setIsRecovery(false)} /> :
+                isRecovery ? <UpdatePassword recoveryToken={recoveryToken} onPasswordUpdated={() => setIsRecovery(false)} /> :
                 !session ? <Auth /> : <Navigate to="/dashboard" />
               } 
             />

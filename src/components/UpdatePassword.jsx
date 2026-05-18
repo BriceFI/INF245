@@ -2,25 +2,43 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Lock, Save, AlertTriangle } from 'lucide-react';
 
-export default function UpdatePassword({ onPasswordUpdated }) {
+export default function UpdatePassword({ onPasswordUpdated, recoveryToken }) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [sessionStatus, setSessionStatus] = useState('checking');
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSessionStatus(session ? 'ok' : 'missing');
-    });
-  }, []);
+    if (recoveryToken) {
+      setSessionStatus('ok');
+    } else {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setSessionStatus(session ? 'ok' : 'missing');
+      });
+    }
+  }, [recoveryToken]);
 
   const handleUpdate = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
     try {
-      const { error } = await supabase.auth.updateUser({ password });
-      if (error) throw error;
+      if (recoveryToken) {
+        const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/user`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${recoveryToken}`
+          },
+          body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.msg || data.message || 'Erreur lors de la mise à jour');
+      } else {
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) throw error;
+      }
       onPasswordUpdated();
     } catch (err) {
       setError(err.message || 'Erreur lors de la mise à jour.');
